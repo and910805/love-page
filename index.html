@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💖 情人節開源浪漫頁</title>
+<style>
+  :root{
+    --theme:#ff4d6d;
+    --bg:#0f0f14;
+    --fg:#ffffff;
+    --dim:#ffffff99;
+  }
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 800px at 50% -200px, #1b1b26 0, #0f0f14 60%);}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Noto Sans TC',sans-serif;color:var(--fg);overflow-x:hidden}
+  .container{max-width:960px;margin:0 auto;padding:24px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .btn{appearance:none;border:1px solid #ffffff33;background:#ffffff0d;color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn:hover{background:#ffffff1a}
+  .heart-wrap{display:flex;align-items:center;justify-content:center;margin:28px 0 12px}
+  .heart{
+    width:160px;height:160px;position:relative;transform:rotate(-45deg);cursor:pointer;
+    animation:beat 1.2s infinite ease-in-out; filter:drop-shadow(0 0 20px #ff4d6db3);
+  }
+  .heart::before,.heart::after{
+    content:"";position:absolute;width:160px;height:160px;background:var(--theme);
+    border-radius:50%;box-shadow:0 0 30px var(--theme);
+  }
+  .heart::before{top:-80px;left:0}
+  .heart::after{left:80px;top:0}
+  @keyframes beat{
+    0%,100%{transform:rotate(-45deg) scale(1)}
+    25%{transform:rotate(-45deg) scale(1.05)}
+    50%{transform:rotate(-45deg) scale(0.98)}
+    75%{transform:rotate(-45deg) scale(1.08)}
+  }
+  h1{margin:6px 0 4px;text-align:center;font-size:clamp(28px,5vw,42px)}
+  .sub{color:var(--dim);text-align:center;margin-bottom:18px}
+  .story{white-space:pre-wrap;background:#ffffff0a;border:1px solid #ffffff1f;padding:16px;border-radius:12px;line-height:1.7}
+  /* 相片牆 */
+  .gallery{display:grid;gap:8px;margin:18px 0;grid-template-columns:repeat(3,1fr)}
+  .gallery img{width:100%;height:160px;object-fit:cover;border-radius:10px;border:1px solid #ffffff22;opacity:0;animation:fadeIn 600ms forwards}
+  @keyframes fadeIn{to{opacity:1}}
+  .dropzone{border:1.5px dashed #ffffff44;border-radius:10px;padding:14px;text-align:center;color:#ffffffaa}
+  /* 播放器 */
+  .player{display:flex;align-items:center;gap:8px;margin:8px 0 4px}
+  .player button{min-width:88px}
+  .timer{font-variant-numeric:tabular-nums;color:var(--dim)}
+  /* 浮動設定面板 */
+  dialog{border:none;border-radius:14px;max-width:680px;width:calc(100% - 32px);background:#15151d;color:var(--fg);padding:0}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .panel{padding:16px 18px 18px}
+  .panel h3{margin:0 0 6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+  input[type="text"], input[type="date"], input[type="color"], textarea{
+    background:#0f0f14;border:1px solid #ffffff22;color:var(--fg);padding:10px;border-radius:8px}
+  textarea{min-height:110px;resize:vertical}
+  .panel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .linkbox{display:flex;gap:8px;align-items:center}
+  .footer{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid #ffffff1a;background:#0f0f14;border-radius:0 0 14px 14px}
+  /* 煙火畫布 */
+  #fx{position:fixed;inset:0;pointer-events:none}
+  /* 飄動小愛心背景 */
+  .floaters{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .floater{position:absolute;opacity:.75;animation:rise linear infinite}
+  @keyframes rise{
+    from{transform:translateY(110vh) scale(.6);opacity:.0}
+    15%{opacity:.9}
+    to{transform:translateY(-15vh) scale(1.1);opacity:.0}
+  }
+  /* Fork banner */
+  .fork{position:fixed;right:12px;bottom:12px;background:#ffffff14;border:1px solid #ffffff26;padding:8px 12px;border-radius:12px}
+  .fork a{color:#fff;text-decoration:none}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="floaters" id="floaters"></div>
+
+<div class="container">
+  <header>
+    <div class="player">
+      <button class="btn" id="playBtn">▶︎ 播放音樂</button>
+      <span class="timer" id="timeText">00:00 / 00:00</span>
+    </div>
+    <div>
+      <button class="btn" id="shareBtn">複製可分享連結</button>
+      <button class="btn" id="openSettings">設定</button>
+    </div>
+  </header>
+
+  <div class="heart-wrap">
+    <div class="heart" id="heart" title="點我放煙火 🎆 / 紙屑 🎉"></div>
+  </div>
+
+  <h1 id="title">💖 給 <span id="lover">我的愛人</span> 的情書</h1>
+  <div class="sub">
+    來自 <span id="sender">我</span> ｜ 我們已相伴
+    <strong id="days">0</strong> 天
+  </div>
+
+  <div class="story" id="story">把我們的故事寫在這裡吧。</div>
+
+  <h3 style="margin:18px 0 8px;">相片牆（拖進 3–9 張）</h3>
+  <div class="dropzone" id="drop">將照片拖曳到這裡，或點此選擇</div>
+  <input type="file" id="filePick" accept="image/*" multiple hidden />
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<div class="fork" id="forkBox">
+  <span>想做成自己的模板？</span>
+  <a id="forkLink" target="_blank" rel="noopener">Use this template →</a>
+</div>
+
+<!-- 設定面板 -->
+<dialog id="dlg">
+  <form method="dialog">
+    <div class="panel">
+      <h3>設定</h3>
+      <div class="grid">
+        <label>愛人名字
+          <input type="text" id="inLover" placeholder="小花" />
+        </label>
+        <label>你的署名
+          <input type="text" id="inSender" placeholder="阿志" />
+        </label>
+        <label>紀念日（anniv）
+          <input type="date" id="inAnniv" />
+        </label>
+        <label>主色
+          <input type="color" id="inTheme" value="#ff4d6d" />
+        </label>
+        <label style="grid-column:1/-1">故事
+          <textarea id="inStory" placeholder="第一次見面的那天..."></textarea>
+        </label>
+        <label>選擇音樂 MP3（本地播放）
+          <input type="file" id="inMp3" accept="audio/mpeg" />
+        </label>
+        <label>相片再上傳
+          <input type="file" id="inMorePhotos" accept="image/*" multiple />
+        </label>
+      </div>
+
+      <div class="row">
+        <div class="linkbox">
+          <button class="btn" type="button" id="makeLink">產生含參數的分享連結</button>
+          <input type="text" id="shareUrl" style="width:360px" readonly placeholder="將設定寫入網址參數" />
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn" value="cancel">取消</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" type="button" id="reset">重置（清除暫存）</button>
+        <button class="btn" id="save" value="default">儲存</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+/* ------------------ 狀態存取 ------------------ */
+const qs=(s)=>document.querySelector(s);
+const state = {
+  lover:"我的愛人",
+  sender:"我",
+  anniv:"", // YYYY-MM-DD
+  story:"把我們的故事寫在這裡吧。",
+  theme:"#ff4d6d",
+  photos:[], // dataURL[]
+  audioSrc:null, // objectURL
+};
+const LS_KEY="valentine_site_v1";
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({ ...state, audioSrc:null })); } // 音樂不存
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const o=JSON.parse(raw);
+    Object.assign(state,o);
+  }catch(e){}
+}
+function parseParams(){
+  const p=new URLSearchParams(location.search);
+  if(p.get("lover")) state.lover=p.get("lover");
+  if(p.get("sender")) state.sender=p.get("sender");
+  if(p.get("anniv")) state.anniv=p.get("anniv");
+  if(p.get("story")) state.story=p.get("story");
+  if(p.get("theme")) state.theme=p.get("theme");
+}
+/* ------------------ UI 綁定 ------------------ */
+const elLover=qs("#lover"), elSender=qs("#sender"), elDays=qs("#days"), elStory=qs("#story");
+const elHeart=qs("#heart"), elFx=qs("#fx"), ctx=elFx.getContext("2d");
+const elPlay=qs("#playBtn"), elTime=qs("#timeText"), audio=qs("#audio");
+const elDrop=qs("#drop"), elPick=qs("#filePick"), elGal=qs("#gallery");
+const dlg=qs("#dlg"), openBtn=qs("#openSettings"), shareBtn=qs("#shareBtn");
+const inLover=qs("#inLover"), inSender=qs("#inSender"), inAnniv=qs("#inAnniv"), inTheme=qs("#inTheme"), inStory=qs("#inStory");
+const inMp3=qs("#inMp3"), inMorePhotos=qs("#inMorePhotos");
+const makeLink=qs("#makeLink"), shareUrl=qs("#shareUrl");
+const resetBtn=qs("#reset"), saveBtn=qs("#save");
+function applyTheme(){ document.documentElement.style.setProperty("--theme", state.theme); }
+
+/* ------------------ 在一起天數 ------------------ */
+function daysSince(dateStr){
+  if(!dateStr) return 0;
+  const t0=new Date(dateStr+"T00:00:00");
+  const td=new Date();
+  return Math.max(0, Math.floor((td - t0)/86400000));
+}
+
+/* ------------------ 相片牆 + 輪播 ------------------ */
+let slideIdx=0, slideTimer=null;
+function renderGallery(){
+  elGal.innerHTML="";
+  const n=state.photos.length;
+  if(!n) return;
+  state.photos.slice(0,9).forEach((src)=>{ // 只取前 9
+    const img=new Image(); img.src=src; img.loading="lazy";
+    elGal.appendChild(img);
+  });
+  startSlideshow();
+}
+function startSlideshow(){
+  stopSlideshow();
+  if(state.photos.length<=1) return;
+  slideTimer=setInterval(()=>{
+    const imgs=elGal.querySelectorAll("img");
+    if(!imgs.length) return;
+    slideIdx=(slideIdx+1)%imgs.length;
+    imgs.forEach((im,i)=>im.style.opacity=(i===slideIdx? "1":"0.25"));
+  }, 3000);
+}
+function stopSlideshow(){ if(slideTimer){ clearInterval(slideTimer); slideTimer=null; }}
+
+/* 拖放/挑選 */
+["dragenter","dragover"].forEach(ev=>elDrop.addEventListener(ev,e=>{ e.preventDefault(); elDrop.style.background="#ffffff10"; }));
+["dragleave","drop"].forEach(ev=>elDrop.addEventListener(ev,e=>{ e.preventDefault(); elDrop.style.background=""; }));
+elDrop.addEventListener("click",()=>elPick.click());
+elDrop.addEventListener("drop",(e)=>handleFiles(e.dataTransfer.files));
+elPick.addEventListener("change",(e)=>handleFiles(e.target.files));
+inMorePhotos.addEventListener("change",(e)=>handleFiles(e.target.files));
+function handleFiles(fileList){
+  const files=[...fileList].filter(f=>f.type.startsWith("image/")).slice(0,9-state.photos.length);
+  if(!files.length) return;
+  let remaining=files.length;
+  files.forEach(f=>{
+    const fr=new FileReader();
+    fr.onload=()=>{ state.photos.push(fr.result); if(--remaining===0){ saveLocal(); renderGallery(); } };
+    fr.readAsDataURL(f);
+  });
+}
+
+/* ------------------ 音樂播放 ------------------ */
+let audioURL=null;
+function setAudioFile(file){
+  if(audioURL) URL.revokeObjectURL(audioURL);
+  audioURL=URL.createObjectURL(file);
+  state.audioSrc=audioURL;
+  audio.src=audioURL;
+  saveLocal();
+}
+inMp3.addEventListener("change",(e)=>{ const f=e.target.files?.[0]; if(f) setAudioFile(f); });
+
+audio.addEventListener("timeupdate",updateTimer);
+audio.addEventListener("loadedmetadata",updateTimer);
+function updateTimer(){
+  const fmt=(s)=>{ if(isNaN(s)) return "00:00"; const m=Math.floor(s/60), ss=Math.floor(s%60); return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
+  elTime.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||0)}`;
+}
+elPlay.addEventListener("click", async ()=>{
+  if(!audio.src){ alert("請先在『設定』上傳一首 MP3（注意授權）。"); return; }
+  if(audio.paused){ try{ await audio.play(); elPlay.textContent="⏸ 暫停"; }catch(e){ console.warn(e);} }
+  else{ audio.pause(); elPlay.textContent="▶︎ 播放音樂"; }
+});
+
+/* ------------------ 紙屑 / 煙火（點愛心） ------------------ */
+function resizeFx(){ elFx.width=innerWidth*devicePixelRatio; elFx.height=innerHeight*devicePixelRatio; }
+addEventListener("resize", resizeFx); resizeFx();
+
+function burst(x,y,kind="mix"){
+  const px=x*devicePixelRatio, py=y*devicePixelRatio;
+  const parts=[];
+  const N=kind==="firework"? 120: 80;
+  for(let i=0;i<N;i++){
+    const angle = (Math.PI*2)*Math.random();
+    const speed = (kind==="firework"? 5: 3) + Math.random()*2;
+    parts.push({
+      x:px, y:py,
+      vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed - (kind==="firework"? 6: 3),
+      g: 0.12*devicePixelRatio,
+      life: 60 + Math.random()*40,
+      color: Math.random()<0.5? state.theme : "#fff"
+    });
+  }
+  animate(parts);
+}
+function confetti(x,y){ burst(x,y,"confetti"); }
+function firework(x,y){ burst(x,y,"firework"); }
+function animate(parts){
+  let t=0;
+  function frame(){
+    t++;
+    ctx.clearRect(0,0,elFx.width,elFx.height);
+    for(const p of parts){
+      if(p.life<=0) continue;
+      p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life--;
+      ctx.globalAlpha = Math.max(0, p.life/100);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y, 3*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+    }
+    if(parts.some(p=>p.life>0)) requestAnimationFrame(frame);
+  }
+  frame();
+}
+elHeart.addEventListener("click",(e)=>{
+  const rect=elHeart.getBoundingClientRect();
+  const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  confetti(cx,cy);
+  setTimeout(()=>firework(cx,cy-80),150);
+});
+
+/* 飄動的小愛心背景 */
+function spawnFloaters(){
+  const box=qs("#floaters");
+  box.innerHTML="";
+  for(let i=0;i<24;i++){
+    const s=document.createElement("div");
+    s.className="floater";
+    const size = 10+Math.random()*22;
+    s.style.left = Math.random()*100+"%";
+    s.style.animationDuration = (8+Math.random()*12)+"s";
+    s.style.animationDelay = (Math.random()*-10)+"s";
+    s.style.filter="drop-shadow(0 0 6px "+state.theme+")";
+    s.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 32 29"><path fill="${state.theme}" d="M23.6,0c-2.7,0-5.1,1.3-6.6,3.3C15.5,1.3,13.1,0,10.4,0C4.7,0,0,4.7,0,10.4 c0,10.6,16.9,18.2,16.9,18.2S33.8,21.1,33.8,10.4C33.8,4.7,29.1,0,23.6,0z"/></svg>`;
+    box.appendChild(s);
+  }
+}
+
+/* ------------------ 設定面板 ------------------ */
+openBtn.addEventListener("click",()=>{
+  inLover.value=state.lover;
+  inSender.value=state.sender;
+  inAnniv.value=state.anniv||"";
+  inTheme.value=state.theme;
+  inStory.value=state.story;
+  dlg.showModal();
+});
+saveBtn.addEventListener("click",()=>{
+  state.lover=inLover.value||"我的愛人";
+  state.sender=inSender.value||"我";
+  state.anniv=inAnniv.value||"";
+  state.theme=inTheme.value||"#ff4d6d";
+  state.story=inStory.value||"";
+  saveLocal();
+  renderAll();
+});
+resetBtn.addEventListener("click",()=>{
+  if(confirm("確定要清除本地暫存（文字、照片、音樂）？")){ localStorage.removeItem(LS_KEY); location.href=location.pathname; }
+});
+makeLink.addEventListener("click",()=>{
+  const u=new URL(location.href);
+  const p=u.searchParams;
+  [["lover",inLover.value],["sender",inSender.value],["anniv",inAnniv.value],["story",inStory.value],["theme",inTheme.value]]
+    .forEach(([k,v])=>{ if(v) p.set(k,v); else p.delete(k); });
+  u.search=p.toString();
+  shareUrl.value=u.toString();
+  shareUrl.select(); document.execCommand('copy');
+});
+shareBtn.addEventListener("click",()=>{
+  const u=new URL(location.href);
+  const p=u.searchParams;
+  [["lover",state.lover],["sender",state.sender],["anniv",state.anniv],["story",state.story],["theme",state.theme]]
+    .forEach(([k,v])=>{ if(v) p.set(k,v); else p.delete(k); });
+  u.search=p.toString();
+  navigator.clipboard.writeText(u.toString());
+  shareBtn.textContent="已複製 ✅"; setTimeout(()=>shareBtn.textContent="複製可分享連結",1200);
+});
+
+/* ------------------ 一鍵 Fork 模板 ------------------ */
+(function setupFork(){
+  const a=document.getElementById("forkLink");
+  // 若你把此 repo 設為 template，GitHub 會顯示 "Use this template"。
+  // 這裡同時提供手動連結：指向目前倉庫的 template 流程。
+  const m=location.hostname.includes("github.io") ? location.pathname.split("/").filter(Boolean) : null;
+  // github.io/{owner}/{repo}/...
+  if(m && m.length>=2){
+    const owner=m[0], repo=m[1];
+    a.href=`https://github.com/new?template_name=${repo}&template_owner=${owner}`;
+  }else{
+    // 若非 Pages 上瀏覽，顯示教學文件
+    a.href="https://docs.github.com/repositories/creating-and-managing-repositories/creating-a-template-repository";
+  }
+})();
+
+/* ------------------ 初始化渲染 ------------------ */
+function renderAll(){
+  elLover.textContent=state.lover;
+  elSender.textContent=state.sender;
+  elStory.textContent=state.story||"";
+  elDays.textContent=daysSince(state.anniv);
+  applyTheme();
+  spawnFloaters();
+  renderGallery();
+}
+(function init(){
+  loadLocal();
+  parseParams();
+  renderAll();
+})();
+</script>
+</body>
+</html>
