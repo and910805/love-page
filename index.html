@@ -1,38 +1,44 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>💖 情人節開源浪漫頁</title>
 <style>
   :root{
-    --theme:#ff4d6d;
-    --bg:#0f0f14;
-    --fg:#ffffff;
+    --theme:#ff5d8f;        /* 代表色（可在設定調整） */
+    --bg:#0e1017;
+    --fg:#fff;
     --dim:#ffffff99;
+    --float-count:24;       /* 背景小愛心數量（可在設定改） */
+    --float-size:22;        /* 背景小愛心基礎尺寸（px） */
+    --float-speed:12;       /* 飄心速度（秒，越小越快） */
   }
-  html,body{height:100%;margin:0;background:radial-gradient(1200px 800px at 50% -200px, #1b1b26 0, #0f0f14 60%);}
+  html,body{height:100%;margin:0;background:
+    radial-gradient(1200px 800px at 50% -200px,#1a1d2a 0,#0e1017 55%);}
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Noto Sans TC',sans-serif;color:var(--fg);overflow-x:hidden}
   .container{max-width:960px;margin:0 auto;padding:24px}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .btn{appearance:none;border:1px solid #ffffff33;background:#ffffff0d;color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
-  .btn:hover{background:#ffffff1a}
+  .btn{appearance:none;border:1px solid #ffffff33;background:#ffffff12;color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn:hover{background:#ffffff1f}
+  /* ====== 中央 SVG 愛心 ====== */
   .heart-wrap{display:flex;align-items:center;justify-content:center;margin:28px 0 12px}
   .heart{
-    width:160px;height:160px;position:relative;transform:rotate(-45deg);cursor:pointer;
-    animation:beat 1.2s infinite ease-in-out; filter:drop-shadow(0 0 20px #ff4d6db3);
+    width:190px;aspect-ratio:1/1;cursor:pointer;filter:drop-shadow(0 0 22px color-mix(in oklab,var(--theme),#fff 18%));
+    transition:transform .2s ease;
+    animation:beat 1.15s infinite ease-in-out;
   }
-  .heart::before,.heart::after{
-    content:"";position:absolute;width:160px;height:160px;background:var(--theme);
-    border-radius:50%;box-shadow:0 0 30px var(--theme);
-  }
-  .heart::before{top:-80px;left:0}
-  .heart::after{left:80px;top:0}
+  .heart:hover{transform:scale(1.05)}
   @keyframes beat{
-    0%,100%{transform:rotate(-45deg) scale(1)}
-    25%{transform:rotate(-45deg) scale(1.05)}
-    50%{transform:rotate(-45deg) scale(0.98)}
-    75%{transform:rotate(-45deg) scale(1.08)}
+    0%,100%{transform:scale(1)}
+    30%{transform:scale(1.08)}
+    55%{transform:scale(.98)}
+    80%{transform:scale(1.12)}
+  }
+  .heart path{
+    fill:url(#g);
+    stroke:var(--theme);
+    stroke-width:1.5;
   }
   h1{margin:6px 0 4px;text-align:center;font-size:clamp(28px,5vw,42px)}
   .sub{color:var(--dim);text-align:center;margin-bottom:18px}
@@ -47,31 +53,135 @@
   .player button{min-width:88px}
   .timer{font-variant-numeric:tabular-nums;color:var(--dim)}
   /* 浮動設定面板 */
-  dialog{border:none;border-radius:14px;max-width:680px;width:calc(100% - 32px);background:#15151d;color:var(--fg);padding:0}
+  dialog{border:none;border-radius:14px;max-width:700px;width:calc(100% - 32px);background:#151824;color:var(--fg);padding:0}
   dialog::backdrop{background:rgba(0,0,0,.6)}
   .panel{padding:16px 18px 18px}
   .panel h3{margin:0 0 6px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .grid label{display:flex;flex-direction:column;gap:6px;font-size:14px}
-  input[type="text"], input[type="date"], input[type="color"], textarea{
-    background:#0f0f14;border:1px solid #ffffff22;color:var(--fg);padding:10px;border-radius:8px}
+  input[type="text"],input[type="date"],input[type="color"],input[type="number"],textarea{
+    background:#0f1220;border:1px solid #ffffff22;color:var(--fg);padding:10px;border-radius:8px}
   textarea{min-height:110px;resize:vertical}
   .panel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .linkbox{display:flex;gap:8px;align-items:center}
-  .footer{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid #ffffff1a;background:#0f0f14;border-radius:0 0 14px 14px}
+  .footer{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid #ffffff1a;background:#0f1220;border-radius:0 0 14px 14px}
   /* 煙火畫布 */
   #fx{position:fixed;inset:0;pointer-events:none}
-  /* 飄動小愛心背景 */
+  /* 飄動小愛心背景（可調整數量/大小/速度） */
   .floaters{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  .floater{position:absolute;opacity:.75;animation:rise linear infinite}
+  .floater{position:absolute;opacity:.85;animation:rise linear infinite}
   @keyframes rise{
-    from{transform:translateY(110vh) scale(.6);opacity:.0}
-    15%{opacity:.9}
-    to{transform:translateY(-15vh) scale(1.1);opacity:.0}
+    from{transform:translateY(110vh) scale(.65);opacity:.0}
+    12%{opacity:.95}
+    to{transform:translateY(-18vh) scale(1.1);opacity:.0}
   }
-  /* Fork banner */
+  /* 里程碑彩蛋條 */
+  .milestone{position:sticky;top:10px;margin:0 auto;max-width:720px;background:#ffffff14;border:1px solid #ffffff2a;color:#fff;padding:10px 14px;border-radius:12px;text-align:center;backdrop-filter:blur(6px)}
   .fork{position:fixed;right:12px;bottom:12px;background:#ffffff14;border:1px solid #ffffff26;padding:8px 12px;border-radius:12px}
   .fork a{color:#fff;text-decoration:none}
+  /* --- 拍立得樣式 --- */
+  .polaroid {
+	background: #fff;
+	color: #111;
+	padding: 8px 8px 22px;
+	border-radius: 6px;
+	border: 1px solid #00000014;
+	box-shadow: 0 12px 24px rgba(0,0,0,.25), 0 4px 10px rgba(0,0,0,.15);
+	transform: rotate(var(--rot, 0deg));
+	transition: transform .2s ease, box-shadow .2s ease;
+	}
+	.polaroid:hover {
+	  transform: rotate(0deg) scale(1.02);
+	  box-shadow: 0 16px 28px rgba(0,0,0,.28), 0 6px 12px rgba(0,0,0,.18);
+	}
+	.polaroid img {
+	  width: 100%; height: 160px; object-fit: cover; border-radius: 4px;
+	}
+	.polaroid .cap {
+	  font-size: 12px; text-align: center; margin-top: 6px; color: #333;
+	}
+	/* --- 拍立得翻面（3D Flip） --- */
+	.polaroid {
+	  position: relative;
+	  perspective: 1000px;
+	  --card-h: 220px;      /* 卡片固定高度，可依需求微調 */
+	  height: var(--card-h);
+	}
+
+	.polaroid .flip-inner {
+	  position: absolute;
+	  inset: 0;
+	  transform-style: preserve-3d;
+	  transition: transform .6s;
+	}
+
+	.polaroid.is-flipped .flip-inner {
+	  transform: rotateY(180deg);
+	}
+
+	.polaroid .flip-face {
+	  position: absolute;
+	  inset: 0;
+	  backface-visibility: hidden;
+	  display: flex;
+	  flex-direction: column;
+	  padding: 8px 8px 22px;      /* 與正面留白一致 */
+	  border-radius: 6px;
+	}
+
+	/* 正面：沿用原本拍立得風格（白底 + 陰影），直接放圖片與字幕 */
+	.polaroid .flip-front {
+	  background: #fff;
+	  color: #111;
+	  border: 1px solid #00000014;
+	  box-shadow: 0 12px 24px rgba(0,0,0,.25), 0 4px 10px rgba(0,0,0,.15);
+	}
+
+	/* 背面：顯示註解與日期 */
+	.polaroid .flip-back {
+	  transform: rotateY(180deg);
+	  background: #fff;
+	  color: #111;
+	  border: 1px solid #00000014;
+	  box-shadow: 0 12px 24px rgba(0,0,0,.25), 0 4px 10px rgba(0,0,0,.15);
+	  justify-content: center;
+	  align-items: center;
+	  text-align: center;
+	}
+
+	.polaroid .back-note { 
+	  font-size: 14px; 
+	  line-height: 1.6; 
+	  white-space: pre-wrap;
+	}
+	.polaroid .back-meta { 
+	  font-size: 12px; 
+	  color: #555; 
+	  margin-top: 6px; 
+	}
+
+	/* 調整正面內容排版（圖片固定 160px，高度由 --card-h 控制整卡高） */
+	.polaroid img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; }
+	.polaroid .cap { font-size: 12px; text-align: center; margin-top: 6px; color: #333; }
+
+	/* --- 打字機與發光心語 --- */
+	.story { position: relative; }
+	.caret {
+	  display:inline-block; width: 0.6ch; border-left: 2px solid currentColor;
+	  animation: caretBlink 1s step-end infinite;
+	}
+	@keyframes caretBlink { 50% { border-color: transparent; } }
+
+	.glow-love {
+	  color: var(--theme);
+	  font-weight: 700;
+	  text-shadow:
+		0 0 6px color-mix(in oklab, var(--theme), #fff 20%),
+		0 0 14px color-mix(in oklab, var(--theme), #fff 35%),
+		0 0 26px color-mix(in oklab, var(--theme), #fff 45%);
+	}
+	
+
 </style>
 </head>
 <body>
@@ -90,9 +200,21 @@
     </div>
   </header>
 
-  <div class="heart-wrap">
-    <div class="heart" id="heart" title="點我放煙火 🎆 / 紙屑 🎉"></div>
+  <div class="heart-wrap" title="點我放煙火 / 紙屑">
+    <!-- 更像的 SVG 愛心（漸層 + 發光） -->
+    <svg class="heart" id="heart" viewBox="0 0 32 29" aria-label="love">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="var(--theme)"/>
+          <stop offset="100%" stop-color="#ffb3c7"/>
+        </linearGradient>
+      </defs>
+      <path d="M23.6,0c-2.7,0-5.1,1.3-6.6,3.3C15.5,1.3,13.1,0,10.4,0C4.7,0,0,4.7,0,10.4
+               c0,10.6,16.9,18.2,16.9,18.2S33.8,21.1,33.8,10.4C33.8,4.7,29.1,0,23.6,0z"/>
+    </svg>
   </div>
+
+  <div id="milestoneBar" class="milestone" style="display:none"></div>
 
   <h1 id="title">💖 給 <span id="lover">我的愛人</span> 的情書</h1>
   <div class="sub">
@@ -120,32 +242,48 @@
       <h3>設定</h3>
       <div class="grid">
         <label>愛人名字
-          <input type="text" id="inLover" placeholder="小花" />
+          <input type="text" id="inLover" placeholder="小花"/>
         </label>
         <label>你的署名
-          <input type="text" id="inSender" placeholder="阿志" />
+          <input type="text" id="inSender" placeholder="阿志"/>
         </label>
         <label>紀念日（anniv）
-          <input type="date" id="inAnniv" />
+          <input type="date" id="inAnniv"/>
         </label>
-        <label>主色
-          <input type="color" id="inTheme" value="#ff4d6d" />
+        <label>主色（代表色）
+          <input type="color" id="inTheme" value="#ff5d8f"/>
         </label>
         <label style="grid-column:1/-1">故事
           <textarea id="inStory" placeholder="第一次見面的那天..."></textarea>
         </label>
+
         <label>選擇音樂 MP3（本地播放）
-          <input type="file" id="inMp3" accept="audio/mpeg" />
+          <input type="file" id="inMp3" accept="audio/mpeg"/>
         </label>
         <label>相片再上傳
-          <input type="file" id="inMorePhotos" accept="image/*" multiple />
+          <input type="file" id="inMorePhotos" accept="image/*" multiple/>
         </label>
+
+        <!-- 新：背景小愛心參數 -->
+        <label>背景飄心數量
+          <input type="number" id="inFloatCount" min="0" max="80" step="1" value="24"/>
+        </label>
+        <label>飄心大小（px）
+          <input type="number" id="inFloatSize" min="8" max="64" step="1" value="22"/>
+        </label>
+        <label>飄心速度（秒）
+          <input type="number" id="inFloatSpeed" min="5" max="30" step="1" value="12"/>
+        </label>
+		<label>打字速度（ms/字）<small id="speedHint">30（中等）</small>
+		  <input type="range" id="inTypingSpeed" min="10" max="80" step="1" value="30"/>
+		</label>
+
       </div>
 
       <div class="row">
         <div class="linkbox">
           <button class="btn" type="button" id="makeLink">產生含參數的分享連結</button>
-          <input type="text" id="shareUrl" style="width:360px" readonly placeholder="將設定寫入網址參數" />
+          <input type="text" id="shareUrl" style="width:360px" readonly placeholder="將設定寫入網址參數"/>
         </div>
       </div>
     </div>
@@ -162,36 +300,41 @@
 <audio id="audio" preload="metadata"></audio>
 
 <script>
-/* ------------------ 狀態存取 ------------------ */
+/* -------------- 狀態 -------------- */
 const qs=(s)=>document.querySelector(s);
-const state = {
-  lover:"我的愛人",
-  sender:"我",
-  anniv:"", // YYYY-MM-DD
-  story:"把我們的故事寫在這裡吧。",
-  theme:"#ff4d6d",
-  photos:[], // dataURL[]
-  audioSrc:null, // objectURL
+const state={
+  lover:"我的愛人", sender:"我",
+  anniv:"", story:"把我們的故事寫在這裡吧。",
+  theme:"#ff5d8f",
+  photos:[],                 
+  photoMeta:[],              
+  audioSrc:null,
+  floatCount:24, floatSize:22, floatSpeed:12,
+  typingSpeed:30
 };
-const LS_KEY="valentine_site_v1";
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({ ...state, audioSrc:null })); } // 音樂不存
+
+const LS_KEY="valentine_site_v2";
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({ ...state, audioSrc:null })); }
 function loadLocal(){
-  try{
-    const raw=localStorage.getItem(LS_KEY);
-    if(!raw) return;
-    const o=JSON.parse(raw);
-    Object.assign(state,o);
-  }catch(e){}
+  try{ const raw=localStorage.getItem(LS_KEY); if(raw) Object.assign(state, JSON.parse(raw)); }catch(e){}
 }
+function normalizePhotoMeta(){
+  state.photoMeta = Array.isArray(state.photoMeta) ? state.photoMeta : [];
+  while(state.photoMeta.length < state.photos.length){
+    state.photoMeta.push({ name:`photo_${state.photoMeta.length+1}`, date:"", note:"" });
+  }
+}
+
 function parseParams(){
   const p=new URLSearchParams(location.search);
-  if(p.get("lover")) state.lover=p.get("lover");
-  if(p.get("sender")) state.sender=p.get("sender");
-  if(p.get("anniv")) state.anniv=p.get("anniv");
-  if(p.get("story")) state.story=p.get("story");
-  if(p.get("theme")) state.theme=p.get("theme");
+  for(const k of ["lover","sender","anniv","story","theme"]) if(p.get(k)) state[k]=p.get(k);
+  if(p.get("floatCount")) state.floatCount=+p.get("floatCount");
+  if(p.get("floatSize"))  state.floatSize =+p.get("floatSize");
+  if(p.get("floatSpeed")) state.floatSpeed=+p.get("floatSpeed");
+  if(p.get("typingSpeed")) state.typingSpeed=+p.get("typingSpeed");   
 }
-/* ------------------ UI 綁定 ------------------ */
+
+/* -------------- 綁定 -------------- */
 const elLover=qs("#lover"), elSender=qs("#sender"), elDays=qs("#days"), elStory=qs("#story");
 const elHeart=qs("#heart"), elFx=qs("#fx"), ctx=elFx.getContext("2d");
 const elPlay=qs("#playBtn"), elTime=qs("#timeText"), audio=qs("#audio");
@@ -199,30 +342,109 @@ const elDrop=qs("#drop"), elPick=qs("#filePick"), elGal=qs("#gallery");
 const dlg=qs("#dlg"), openBtn=qs("#openSettings"), shareBtn=qs("#shareBtn");
 const inLover=qs("#inLover"), inSender=qs("#inSender"), inAnniv=qs("#inAnniv"), inTheme=qs("#inTheme"), inStory=qs("#inStory");
 const inMp3=qs("#inMp3"), inMorePhotos=qs("#inMorePhotos");
+const inFloatCount=qs("#inFloatCount"), inFloatSize=qs("#inFloatSize"), inFloatSpeed=qs("#inFloatSpeed");
 const makeLink=qs("#makeLink"), shareUrl=qs("#shareUrl");
 const resetBtn=qs("#reset"), saveBtn=qs("#save");
-function applyTheme(){ document.documentElement.style.setProperty("--theme", state.theme); }
+const bar=qs("#milestoneBar");
+const inTypingSpeed = qs("#inTypingSpeed");
+const speedHint = qs("#speedHint");
 
-/* ------------------ 在一起天數 ------------------ */
+function applyTheme(){
+  document.documentElement.style.setProperty("--theme", state.theme);
+  document.documentElement.style.setProperty("--float-count", state.floatCount);
+  document.documentElement.style.setProperty("--float-size", state.floatSize);
+  document.documentElement.style.setProperty("--float-speed", state.floatSpeed);
+}
+
+/* -------------- 在一起天數 + 里程碑彩蛋 -------------- */
 function daysSince(dateStr){
   if(!dateStr) return 0;
-  const t0=new Date(dateStr+"T00:00:00");
-  const td=new Date();
-  return Math.max(0, Math.floor((td - t0)/86400000));
+  const t0=new Date(dateStr+"T00:00:00"), td=new Date();
+  return Math.max(0, Math.floor((td-t0)/86400000));
+}
+const milestones=[100,365,500,1000];
+function checkMilestones(d){
+  const hit=milestones.find(m=>d===m);
+  if(!hit){ bar.style.display="none"; return; }
+  bar.textContent=`🎉 今天是我們在一起的第 ${hit} 天！謝謝你一直都在。`;
+  bar.style.display="block";
+  // 連續煙火彩蛋
+  const rect=elHeart.getBoundingClientRect();
+  for(let i=0;i<3;i++) setTimeout(()=>firework(rect.left+rect.width/2, rect.top+rect.height/2-60), 220*i);
 }
 
-/* ------------------ 相片牆 + 輪播 ------------------ */
+/* -------------- 相片牆 + 輪播 -------------- */
 let slideIdx=0, slideTimer=null;
 function renderGallery(){
-  elGal.innerHTML="";
-  const n=state.photos.length;
+  elGal.innerHTML = "";
+  const n = state.photos.length;
   if(!n) return;
-  state.photos.slice(0,9).forEach((src)=>{ // 只取前 9
-    const img=new Image(); img.src=src; img.loading="lazy";
-    elGal.appendChild(img);
+
+  state.photos.slice(0,9).forEach((src, idx)=>{
+    const meta = state.photoMeta?.[idx] || {};
+    const fig = document.createElement("figure");
+    fig.className = "polaroid";
+    // 仍保留輕微歪斜隨機角度
+    const rot = (Math.random()*12 - 6).toFixed(2); // -6° ~ +6°
+    fig.style.setProperty("--rot", rot+"deg");
+    fig.style.transform = `rotate(var(--rot, 0deg))`;
+
+    // 內層 3D 容器
+    const inner = document.createElement("div");
+    inner.className = "flip-inner";
+
+    // 正面
+    const front = document.createElement("div");
+    front.className = "flip-face flip-front";
+    const img = new Image();
+    img.src = src; img.loading = "lazy";
+    front.appendChild(img);
+    const cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = meta.note?.trim() ? meta.note : `我們的回憶 #${idx+1}`;
+    front.appendChild(cap);
+
+    // 背面
+    const back = document.createElement("div");
+    back.className = "flip-face flip-back";
+    back.innerHTML = `
+      <div class="back-note">${(meta.note && meta.note.trim()) ? meta.note : '（點兩下可自訂註解）'}</div>
+      <div class="back-meta">${meta.date ? `拍攝日期：${meta.date}` : (meta.name ? meta.name : '')}</div>
+    `;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    fig.appendChild(inner);
+
+    // 點一下翻面
+	fig.addEventListener("click", () => {
+	  fig.classList.toggle("is-flipped"); // 先翻面
+	  if (fig.classList.contains("is-flipped")) {
+		stopSlideshow(); // 翻到背面 → 停止輪播
+	  } else {
+		startSlideshow(); // 翻回正面 → 重新開始輪播
+	  }
+	});
+
+
+    // （可選）雙擊背面，快速編輯註解 → 直接存入 state.photoMeta 並重繪
+    fig.addEventListener("dblclick",(e)=>{
+      e.preventDefault();
+      const cur = state.photoMeta[idx]?.note || "";
+      const note = prompt("為這張照片寫一句話吧（會儲存在本機）", cur);
+      if(note !== null){
+        state.photoMeta[idx] = { ...(state.photoMeta[idx]||{}), note: note.trim() };
+        saveLocal();
+        renderGallery();
+      }
+    });
+
+    elGal.appendChild(fig);
   });
+
   startSlideshow();
 }
+
 function startSlideshow(){
   stopSlideshow();
   if(state.photos.length<=1) return;
@@ -230,8 +452,8 @@ function startSlideshow(){
     const imgs=elGal.querySelectorAll("img");
     if(!imgs.length) return;
     slideIdx=(slideIdx+1)%imgs.length;
-    imgs.forEach((im,i)=>im.style.opacity=(i===slideIdx? "1":"0.25"));
-  }, 3000);
+    imgs.forEach((im,i)=>im.style.opacity=(i===slideIdx? "1":"0.3"));
+  }, 3200);
 }
 function stopSlideshow(){ if(slideTimer){ clearInterval(slideTimer); slideTimer=null; }}
 
@@ -246,53 +468,54 @@ function handleFiles(fileList){
   const files=[...fileList].filter(f=>f.type.startsWith("image/")).slice(0,9-state.photos.length);
   if(!files.length) return;
   let remaining=files.length;
+
   files.forEach(f=>{
     const fr=new FileReader();
-    fr.onload=()=>{ state.photos.push(fr.result); if(--remaining===0){ saveLocal(); renderGallery(); } };
+    fr.onload=()=>{ 
+      state.photos.push(fr.result); 
+      // 記錄檔名與「修改日期」（多數相機/手機轉檔會落在這）
+      const date = f.lastModified ? new Date(f.lastModified).toISOString().slice(0,10) : "";
+      state.photoMeta.push({ name: f.name || `photo_${Date.now()}`, date, note: "" });
+      if(--remaining===0){ saveLocal(); renderGallery(); } 
+    };
     fr.readAsDataURL(f);
   });
 }
 
-/* ------------------ 音樂播放 ------------------ */
+/* -------------- 音樂 -------------- */
 let audioURL=null;
 function setAudioFile(file){
   if(audioURL) URL.revokeObjectURL(audioURL);
   audioURL=URL.createObjectURL(file);
-  state.audioSrc=audioURL;
-  audio.src=audioURL;
-  saveLocal();
+  state.audioSrc=audioURL; audio.src=audioURL; saveLocal();
 }
 inMp3.addEventListener("change",(e)=>{ const f=e.target.files?.[0]; if(f) setAudioFile(f); });
-
 audio.addEventListener("timeupdate",updateTimer);
 audio.addEventListener("loadedmetadata",updateTimer);
 function updateTimer(){
   const fmt=(s)=>{ if(isNaN(s)) return "00:00"; const m=Math.floor(s/60), ss=Math.floor(s%60); return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
-  elTime.textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||0)}`;
+  qs("#timeText").textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration||0)}`;
 }
-elPlay.addEventListener("click", async ()=>{
+qs("#playBtn").addEventListener("click", async ()=>{
   if(!audio.src){ alert("請先在『設定』上傳一首 MP3（注意授權）。"); return; }
-  if(audio.paused){ try{ await audio.play(); elPlay.textContent="⏸ 暫停"; }catch(e){ console.warn(e);} }
-  else{ audio.pause(); elPlay.textContent="▶︎ 播放音樂"; }
+  if(audio.paused){ try{ await audio.play(); qs("#playBtn").textContent="⏸ 暫停"; }catch(e){} }
+  else{ audio.pause(); qs("#playBtn").textContent="▶︎ 播放音樂"; }
 });
 
-/* ------------------ 紙屑 / 煙火（點愛心） ------------------ */
+/* -------------- 紙屑/煙火 -------------- */
 function resizeFx(){ elFx.width=innerWidth*devicePixelRatio; elFx.height=innerHeight*devicePixelRatio; }
 addEventListener("resize", resizeFx); resizeFx();
 
 function burst(x,y,kind="mix"){
   const px=x*devicePixelRatio, py=y*devicePixelRatio;
-  const parts=[];
-  const N=kind==="firework"? 120: 80;
+  const parts=[], N=(kind==="firework"? 120: 80);
   for(let i=0;i<N;i++){
     const angle = (Math.PI*2)*Math.random();
     const speed = (kind==="firework"? 5: 3) + Math.random()*2;
     parts.push({
-      x:px, y:py,
-      vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed - (kind==="firework"? 6: 3),
-      g: 0.12*devicePixelRatio,
-      life: 60 + Math.random()*40,
-      color: Math.random()<0.5? state.theme : "#fff"
+      x:px, y:py, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed - (kind==="firework"? 6: 3),
+      g: 0.12*devicePixelRatio, life: 60 + Math.random()*40,
+      color: Math.random()<0.6? state.theme : "#fff"
     });
   }
   animate(parts);
@@ -300,116 +523,175 @@ function burst(x,y,kind="mix"){
 function confetti(x,y){ burst(x,y,"confetti"); }
 function firework(x,y){ burst(x,y,"firework"); }
 function animate(parts){
-  let t=0;
   function frame(){
-    t++;
     ctx.clearRect(0,0,elFx.width,elFx.height);
+    let alive=false;
     for(const p of parts){
       if(p.life<=0) continue;
-      p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life--;
-      ctx.globalAlpha = Math.max(0, p.life/100);
-      ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(p.x,p.y, 3*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+      alive=true; p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life--;
+      ctx.globalAlpha=Math.max(0,p.life/100); ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,3*devicePixelRatio,0,Math.PI*2); ctx.fill();
     }
-    if(parts.some(p=>p.life>0)) requestAnimationFrame(frame);
-  }
-  frame();
+    if(alive) requestAnimationFrame(frame);
+  } frame();
 }
-elHeart.addEventListener("click",(e)=>{
-  const rect=elHeart.getBoundingClientRect();
-  const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
-  confetti(cx,cy);
-  setTimeout(()=>firework(cx,cy-80),150);
+elHeart.addEventListener("click",()=>{
+  const r=elHeart.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  confetti(cx,cy); setTimeout(()=>firework(cx,cy-80),160);
 });
 
-/* 飄動的小愛心背景 */
+/* -------------- 背景飄心 -------------- */
 function spawnFloaters(){
-  const box=qs("#floaters");
-  box.innerHTML="";
-  for(let i=0;i<24;i++){
-    const s=document.createElement("div");
-    s.className="floater";
-    const size = 10+Math.random()*22;
+  const box=qs("#floaters"); box.innerHTML="";
+  const n=Number(state.floatCount)||0;
+  for(let i=0;i<n;i++){
+    const s=document.createElement("div"); s.className="floater";
+    const sz = (Number(state.floatSize)||22) * (0.7+Math.random()*0.9);
+    const sp = (Number(state.floatSpeed)||12) * (0.8+Math.random()*1.2);
     s.style.left = Math.random()*100+"%";
-    s.style.animationDuration = (8+Math.random()*12)+"s";
+    s.style.animationDuration = (sp + Math.random()*6) + "s";
     s.style.animationDelay = (Math.random()*-10)+"s";
-    s.style.filter="drop-shadow(0 0 6px "+state.theme+")";
-    s.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 32 29"><path fill="${state.theme}" d="M23.6,0c-2.7,0-5.1,1.3-6.6,3.3C15.5,1.3,13.1,0,10.4,0C4.7,0,0,4.7,0,10.4 c0,10.6,16.9,18.2,16.9,18.2S33.8,21.1,33.8,10.4C33.8,4.7,29.1,0,23.6,0z"/></svg>`;
+    s.style.filter = "drop-shadow(0 0 6px "+state.theme+")";
+    s.innerHTML = `<svg width="${sz}" height="${sz}" viewBox="0 0 32 29">
+      <path fill="${state.theme}" d="M23.6,0c-2.7,0-5.1,1.3-6.6,3.3C15.5,1.3,13.1,0,10.4,0C4.7,0,0,4.7,0,10.4
+      c0,10.6,16.9,18.2,16.9,18.2S33.8,21.1,33.8,10.4C33.8,4.7,29.1,0,23.6,0z"/></svg>`;
     box.appendChild(s);
   }
 }
 
-/* ------------------ 設定面板 ------------------ */
+/* -------------- 設定面板 -------------- */
 openBtn.addEventListener("click",()=>{
-  inLover.value=state.lover;
-  inSender.value=state.sender;
-  inAnniv.value=state.anniv||"";
-  inTheme.value=state.theme;
+  inLover.value=state.lover; inSender.value=state.sender;
+  inAnniv.value=state.anniv||""; inTheme.value=state.theme;
   inStory.value=state.story;
+  inFloatCount.value=state.floatCount; inFloatSize.value=state.floatSize; inFloatSpeed.value=state.floatSpeed;
+  inTypingSpeed.value=state.typingSpeed;                                  // ← 新增
+  speedHint.textContent = `${state.typingSpeed}（${speedLabel(state.typingSpeed)}）`;
   dlg.showModal();
 });
+inTypingSpeed.addEventListener("input",()=>{
+  speedHint.textContent = `${inTypingSpeed.value}（${speedLabel(+inTypingSpeed.value)}）`;
+});
+function speedLabel(v){
+  if(v<=16) return "超快";
+  if(v<=24) return "很快";
+  if(v<=36) return "中等";
+  if(v<=50) return "稍慢";
+  return "慢速";
+}
 saveBtn.addEventListener("click",()=>{
   state.lover=inLover.value||"我的愛人";
   state.sender=inSender.value||"我";
   state.anniv=inAnniv.value||"";
-  state.theme=inTheme.value||"#ff4d6d";
+  state.theme=inTheme.value||"#ff5d8f";
   state.story=inStory.value||"";
-  saveLocal();
-  renderAll();
+  state.floatCount=Number(inFloatCount.value)||0;
+  state.floatSize =Number(inFloatSize.value)||22;
+  state.floatSpeed=Number(inFloatSpeed.value)||12;
+  saveLocal(); renderAll();
 });
 resetBtn.addEventListener("click",()=>{
   if(confirm("確定要清除本地暫存（文字、照片、音樂）？")){ localStorage.removeItem(LS_KEY); location.href=location.pathname; }
 });
 makeLink.addEventListener("click",()=>{
-  const u=new URL(location.href);
-  const p=u.searchParams;
-  [["lover",inLover.value],["sender",inSender.value],["anniv",inAnniv.value],["story",inStory.value],["theme",inTheme.value]]
-    .forEach(([k,v])=>{ if(v) p.set(k,v); else p.delete(k); });
-  u.search=p.toString();
-  shareUrl.value=u.toString();
-  shareUrl.select(); document.execCommand('copy');
+  const u=new URL(location.href), p=u.searchParams;
+  [["lover",state.lover],["sender",state.sender],["anniv",state.anniv],["story",state.story],["theme",state.theme],
+   ["floatCount",state.floatCount],["floatSize",state.floatSize],["floatSpeed",state.floatSpeed]]
+   .forEach(([k,v])=>{ if(v!==undefined && v!=="") p.set(k,String(v)); });
+  u.search=p.toString(); shareUrl.value=u.toString(); shareUrl.select(); document.execCommand('copy');
 });
 shareBtn.addEventListener("click",()=>{
-  const u=new URL(location.href);
-  const p=u.searchParams;
-  [["lover",state.lover],["sender",state.sender],["anniv",state.anniv],["story",state.story],["theme",state.theme]]
-    .forEach(([k,v])=>{ if(v) p.set(k,v); else p.delete(k); });
-  u.search=p.toString();
-  navigator.clipboard.writeText(u.toString());
+  const u=new URL(location.href), p=u.searchParams;
+  [["lover",state.lover],["sender",state.sender],["anniv",state.anniv],["story",state.story],["theme",state.theme],
+   ["floatCount",state.floatCount],["floatSize",state.floatSize],["floatSpeed",state.floatSpeed]]
+  .forEach(([k,v])=>{ if(v!==undefined && v!=="") p.set(k,String(v)); });
+  u.search=p.toString(); navigator.clipboard.writeText(u.toString());
   shareBtn.textContent="已複製 ✅"; setTimeout(()=>shareBtn.textContent="複製可分享連結",1200);
 });
+/* === 打字機：逐字把故事打出來，完成後自動加「我愛你」 === */
+let typingTimer = null;
+function typeStory(text, targetEl){
+  // 停掉舊的
+  if(typingTimer){ clearInterval(typingTimer); typingTimer = null; }
 
-/* ------------------ 一鍵 Fork 模板 ------------------ */
+  targetEl.innerHTML = "";  // 清空
+  const lines = (text || "").split(/\r?\n/).filter((l,i,arr)=>!(i===arr.length-1 && l.trim()===""));
+  const caret = document.createElement("span"); 
+  caret.className = "caret";
+
+  let li = 0, ci = 0;
+  let finished = false;
+
+  function newLine(){
+    const p = document.createElement("div");
+    targetEl.appendChild(p);
+    return p;
+  }
+  let lineEl = newLine();
+
+  function finish(){
+    if(finished) return;             // 防止重複追加
+    finished = true;
+    if(typingTimer){ 
+      clearInterval(typingTimer); 
+      typingTimer = null; 
+    }
+    caret.remove();
+    const love = document.createElement("div");
+    love.innerHTML = `<span class="glow-love">我愛你</span>`;
+    targetEl.appendChild(love);
+  }
+
+  function tick(){
+    if(li >= lines.length){
+      finish();
+      return;
+    }
+    const cur = lines[li];
+    if(ci <= cur.length){
+      lineEl.textContent = cur.slice(0, ci);
+      ci++;
+    }else{
+      li++; ci = 0;
+      lineEl = newLine();
+    }
+    // 移動游標到最後
+    caret.remove(); 
+    targetEl.appendChild(caret);
+    targetEl.scrollTop = targetEl.scrollHeight;
+  }
+
+  // 開始打字（速度可調）
+  typingTimer = setInterval(tick, 30); // 數字越小越快（建議 25~45）
+}
+
+
+/* -------------- 一鍵 Template -------------- */
 (function setupFork(){
   const a=document.getElementById("forkLink");
-  // 若你把此 repo 設為 template，GitHub 會顯示 "Use this template"。
-  // 這裡同時提供手動連結：指向目前倉庫的 template 流程。
   const m=location.hostname.includes("github.io") ? location.pathname.split("/").filter(Boolean) : null;
-  // github.io/{owner}/{repo}/...
-  if(m && m.length>=2){
-    const owner=m[0], repo=m[1];
-    a.href=`https://github.com/new?template_name=${repo}&template_owner=${owner}`;
-  }else{
-    // 若非 Pages 上瀏覽，顯示教學文件
-    a.href="https://docs.github.com/repositories/creating-and-managing-repositories/creating-a-template-repository";
-  }
+  if(m && m.length>=2){ const owner=m[0], repo=m[1]; a.href=`https://github.com/new?template_name=${repo}&template_owner=${owner}`; }
+  else{ a.href="https://docs.github.com/repositories/creating-and-managing-repositories/creating-a-template-repository"; }
 })();
 
-/* ------------------ 初始化渲染 ------------------ */
+/* -------------- 初始化 -------------- */
 function renderAll(){
-  elLover.textContent=state.lover;
-  elSender.textContent=state.sender;
-  elStory.textContent=state.story||"";
-  elDays.textContent=daysSince(state.anniv);
-  applyTheme();
-  spawnFloaters();
-  renderGallery();
+  elLover.textContent=state.lover; elSender.textContent=state.sender;
+  typeStory(state.story || "", elStory);
+  const d=daysSince(state.anniv); elDays.textContent=d;
+  checkMilestones(d);
+  applyTheme(); spawnFloaters(); renderGallery();
 }
-(function init(){
-  loadLocal();
-  parseParams();
-  renderAll();
+(function init(){ 
+  loadLocal(); 
+  parseParams(); 
+  normalizePhotoMeta();      
+  renderAll(); 
 })();
+
+
+
 </script>
 </body>
 </html>
