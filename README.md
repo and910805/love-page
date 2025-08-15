@@ -25,3 +25,4 @@
 
 ## 🧩 想用 React / Vite？
 本模板為單檔版。若要擴充為 React，可將邏輯拆為元件後以 Vite 部署 GitHub Pages。
+我找時間在出一版React版本
